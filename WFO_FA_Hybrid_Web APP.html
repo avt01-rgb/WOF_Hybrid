@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>FDM Optimization Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    font-family: Arial;
+    background: #f5f6fa;
+    margin: 0;
+}
+
+.header {
+    text-align: center;
+    padding: 15px;
+    background: #2c3e50;
+    color: white;
+}
+
+.container {
+    display: flex;
+    padding: 10px;
+}
+
+.panel {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px;
+}
+
+.left { width: 25%; }
+.center { width: 45%; }
+.right { width: 25%; }
+
+.card {
+    background: #ecf0f1;
+    padding: 10px;
+    margin: 8px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+button {
+    background: #2980b9;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    width: 100%;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<h2>FDM PROCESS OPTIMIZATION DASHBOARD</h2>
+<p>Hybrid WOA–FA Multi-objective Optimization</p>
+</div>
+
+<div class="container">
+
+<!-- LEFT -->
+<div class="panel left">
+<h3>Input Section</h3>
+
+<label>Temperature</label><br>
+<input id="temp" value="250"><br>
+
+<label>Air Gap</label><br>
+<input id="air" value="0"><br>
+
+<label>Layer Thickness</label><br>
+<input id="lt" value="0.2"><br>
+
+<label>Raster Orientation</label><br>
+<input id="ro" value="45"><br><br>
+
+<button onclick="runModel()">Run Analysis</button>
+</div>
+
+<!-- CENTER -->
+<div class="panel center">
+<h3>Predicted Performance</h3>
+
+<div class="card">TS: <span id="ts"></span></div>
+<div class="card">FS: <span id="fs"></span></div>
+<div class="card">Shrink: <span id="s"></span></div>
+<div class="card">Ra: <span id="ra"></span></div>
+
+<canvas id="barChart"></canvas>
+<canvas id="radarChart"></canvas>
+
+</div>
+
+<!-- RIGHT -->
+<div class="panel right">
+<h3>Recommendation</h3>
+<p id="rec"></p>
+</div>
+
+</div>
+
+<script>
+
+let barChart, radarChart;
+
+function runModel(){
+
+let T = parseFloat(document.getElementById("temp").value);
+let AG = parseFloat(document.getElementById("air").value);
+let LT = parseFloat(document.getElementById("lt").value);
+let RO = parseFloat(document.getElementById("ro").value);
+
+/* 🔴 Replace with YOUR REAL EQUATIONS */
+let TS = 40 + 0.05*T - 200*AG + 10*LT - 0.1*RO;
+let FS = 45 + 0.04*T - 150*AG + 8*LT - 0.08*RO;
+let S  = 5 - 0.01*T + 100*AG - 5*LT;
+let Ra = 6 - 0.02*T + 50*AG - 3*LT;
+
+document.getElementById("ts").innerHTML = TS.toFixed(2);
+document.getElementById("fs").innerHTML = FS.toFixed(2);
+document.getElementById("s").innerHTML = S.toFixed(2);
+document.getElementById("ra").innerHTML = Ra.toFixed(2);
+
+/* BAR CHART */
+let barData = [TS, FS, S, Ra];
+
+if(barChart) barChart.destroy();
+
+barChart = new Chart(document.getElementById("barChart"), {
+    type: 'bar',
+    data: {
+        labels: ['TS','FS','Shrink','Ra'],
+        datasets: [{
+            label: 'Performance',
+            data: barData
+        }]
+    }
+});
+
+/* RADAR CHART */
+if(radarChart) radarChart.destroy();
+
+radarChart = new Chart(document.getElementById("radarChart"), {
+    type: 'radar',
+    data: {
+        labels: ['TS','FS','Shrink','Ra'],
+        datasets: [{
+            label: 'Performance',
+            data: barData
+        }]
+    }
+});
+
+/* RECOMMENDATION */
+if(TS>50 && FS>55 && S<2 && Ra<1){
+document.getElementById("rec").innerHTML =
+"✔ Balanced optimal solution<br>✔ High strength<br>✔ Low shrinkage & roughness";
+}else{
+document.getElementById("rec").innerHTML =
+"⚠ Trade-off required<br>Adjust parameters for better balance";
+}
+
+}
+
+</script>
+
+</body>
+</html>
